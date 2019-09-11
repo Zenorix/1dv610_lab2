@@ -10,6 +10,8 @@ class LoginView {
 	private static $keep = 'LoginView::KeepMeLoggedIn';
 	private static $messageId = 'LoginView::Message';
 	private static $storedUsername = "";
+	private static $authenticUsername = "Admin";
+	private static $authenticPassword = "Password";
 
 	
 
@@ -31,6 +33,13 @@ class LoginView {
 		elseif (!$this->getRequestedPassword()){
 			$message = "Password is missing";
 			self::$storedUsername = $this->getRequestUserName();
+		}
+		//Verifies credentials are correct, if not we say one of them are wrong
+		else{
+			if (!($this->isUsernameAuthentic() && $this->isPasswordAuthentic())){
+				$message = "Wrong name or password";
+				self::$storedUsername = $this->getRequestUserName();
+			}
 		}
 		
 		$response = $this->generateLoginFormHTML($message);
@@ -77,6 +86,22 @@ class LoginView {
 				</fieldset>
 			</form>
 		';
+	}
+
+	/**
+	* Checks if the password provided is authentic
+	* @return  boolean whenever it is authentic or not
+	*/
+	private function isPasswordAuthentic() {
+		return $this->getRequestedPassword() == self::$authenticPassword;
+	}
+
+	/**
+	* Checks if the password provided is authentic
+	* @return  boolean whenever it is authentic or not
+	*/
+	private function isUsernameAuthentic() {
+		return $this->getRequestUserName() == self::$authenticUsername;
 	}
 	
 	//CREATE GET-FUNCTIONS TO FETCH REQUEST VARIABLES
