@@ -9,6 +9,7 @@ class LoginView {
 	private static $cookiePassword = 'LoginView::CookiePassword';
 	private static $keep = 'LoginView::KeepMeLoggedIn';
 	private static $messageId = 'LoginView::Message';
+	private static $storedUsername = "";
 
 	
 
@@ -25,6 +26,11 @@ class LoginView {
 		// Verifies if a username is entered and gives appropiate response if not
 		if (!$this->getRequestUserName()){
 			$message = "Username is missing";
+		}
+		// Verifies password entered, prompting user if not (Saving username)
+		elseif (!$this->getRequestedPassword()){
+			$message = "Password is missing";
+			self::$storedUsername = $this->getRequestUserName();
 		}
 		
 		$response = $this->generateLoginFormHTML($message);
@@ -59,7 +65,7 @@ class LoginView {
 					<p id="' . self::$messageId . '">' . $message . '</p>
 					
 					<label for="' . self::$name . '">Username :</label>
-					<input type="text" id="' . self::$name . '" name="' . self::$name . '" value="" />
+					<input type="text" id="' . self::$name . '" name="' . self::$name . '" value="' . self::$storedUsername . '" />
 
 					<label for="' . self::$password . '">Password :</label>
 					<input type="password" id="' . self::$password . '" name="' . self::$password . '" />
@@ -77,6 +83,10 @@ class LoginView {
 	private function getRequestUserName() {
 		//RETURN REQUEST VARIABLE: USERNAME
 		return $_POST[self::$name];
+	}
+
+	private function getRequestedPassword(){
+		return $_POST[self::$password];
 	}
 	
 }
