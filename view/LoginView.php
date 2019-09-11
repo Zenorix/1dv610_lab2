@@ -21,6 +21,11 @@ class LoginView {
 	 */
 	public function response() {
 		$message = '';
+
+		// Verifies if a username is entered and gives appropiate response if not
+		if (!$this->getRequestUserName()){
+			$message = "Username is missing";
+		}
 		
 		$response = $this->generateLoginFormHTML($message);
 		//$response .= $this->generateLogoutButtonHTML($message);
@@ -71,6 +76,7 @@ class LoginView {
 	//CREATE GET-FUNCTIONS TO FETCH REQUEST VARIABLES
 	private function getRequestUserName() {
 		//RETURN REQUEST VARIABLE: USERNAME
+		return $_POST[self::$name];
 	}
 	
 }
