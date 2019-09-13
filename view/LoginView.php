@@ -107,11 +107,17 @@ class LoginView {
 	//CREATE GET-FUNCTIONS TO FETCH REQUEST VARIABLES
 	private function getRequestUserName() {
 		//RETURN REQUEST VARIABLE: USERNAME
-		return $_POST[self::$name];
+			return $this->getPostInput($_POST[self::$usernameId]);
 	}
 
 	private function getRequestedPassword(){
-		return $_POST[self::$password];
+		return $this->getPostInput($_POST[self::$passwordId]);
+	}
+
+	// To remove unnecessary characters and blackslashes, as well prevent code injection
+	// Source: https://www.w3schools.com/php/php_form_validation.asp
+	private function getPostInput($data){
+		return htmlspecialchars(stripslashes(trim($data)));
 	}
 	
 }
