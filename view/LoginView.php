@@ -26,19 +26,19 @@ class LoginView {
 		$message = '';
 
 		// Verifies if a username is entered and gives appropiate response if not
-		if (!$this->getRequestUserName()){
+			if (!$this->getUserName() ){
 			$message = "Username is missing";
 		}
 		// Verifies password entered, prompting user if not (Saving username)
-		elseif (!$this->getRequestedPassword()){
+			elseif (!$this->getPassword()){
 			$message = "Password is missing";
-			self::$storedUsername = $this->getRequestUserName();
+				self::$storedUsername = $this->getUserName();
 		}
 		//Verifies credentials are correct, if not we say one of them are wrong
 		else{
 			if (!($this->isUsernameAuthentic() && $this->isPasswordAuthentic())){
 				$message = "Wrong name or password";
-				self::$storedUsername = $this->getRequestUserName();
+					self::$storedUsername = $this->getUserName();
 			}
 			}
 		
@@ -93,7 +93,7 @@ class LoginView {
 	* @return  boolean whenever it is authentic or not
 	*/
 	private function isPasswordAuthentic() {
-		return $this->getRequestedPassword() == self::$authenticPassword;
+		return $this->getPassword() == self::$authenticPassword;
 	}
 
 	/**
@@ -101,23 +101,21 @@ class LoginView {
 	* @return  boolean whenever it is authentic or not
 	*/
 	private function isUsernameAuthentic() {
-		return $this->getRequestUserName() == self::$authenticUsername;
+		return $this->getUserName() == self::$authenticUsername;
 	}
 	
-	//CREATE GET-FUNCTIONS TO FETCH REQUEST VARIABLES
-	private function getRequestUserName() {
-		//RETURN REQUEST VARIABLE: USERNAME
-			return $this->getPostInput($_POST[self::$usernameId]);
+	private function getUserName() {
+			return $this->getPostInput(self::$usernameId);
 	}
 
-	private function getRequestedPassword(){
-		return $this->getPostInput($_POST[self::$passwordId]);
+	private function getPassword(){
+		return $this->getPostInput(self::$passwordId);
 	}
 
 	// To remove unnecessary characters and blackslashes, as well prevent code injection
 	// Source: https://www.w3schools.com/php/php_form_validation.asp
-	private function getPostInput($data){
-		return htmlspecialchars(stripslashes(trim($data)));
+	private function getPostInput($postData){
+		return htmlspecialchars( stripslashes( trim($_POST[$postData]) ) );
 	}
 	
 }
