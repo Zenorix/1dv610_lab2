@@ -1,13 +1,13 @@
 <?php
 
 class LoginView {
-	private static $login = 'LoginView::Login';
-	private static $logout = 'LoginView::Logout';
-	private static $name = 'LoginView::UserName';
-	private static $password = 'LoginView::Password';
+	private static $loginId = 'LoginView::Login';
+	private static $logoutId = 'LoginView::Logout';
+	private static $usernameId = 'LoginView::UserName';
+	private static $passwordId = 'LoginView::Password';
 	private static $cookieName = 'LoginView::CookieName';
 	private static $cookiePassword = 'LoginView::CookiePassword';
-	private static $keep = 'LoginView::KeepMeLoggedIn';
+	private static $keepId = 'LoginView::KeepMeLoggedIn';
 	private static $messageId = 'LoginView::Message';
 	private static $storedUsername = "";
 	private static $authenticUsername = "Admin";
@@ -40,9 +40,9 @@ class LoginView {
 				$message = "Wrong name or password";
 				self::$storedUsername = $this->getRequestUserName();
 			}
-		}
+			}
 		
-		$response = $this->generateLoginFormHTML($message);
+			$response = $this->generateLoginFormHTML($message);
 		//$response .= $this->generateLogoutButtonHTML($message);
 		return $response;
 	}
@@ -56,7 +56,7 @@ class LoginView {
 		return '
 			<form  method="post" >
 				<p id="' . self::$messageId . '">' . $message .'</p>
-				<input type="submit" name="' . self::$logout . '" value="logout"/>
+				<input type="submit" name="' . self::$logoutId . '" value="logout"/>
 			</form>
 		';
 	}
@@ -73,16 +73,16 @@ class LoginView {
 					<legend>Login - enter Username and password</legend>
 					<p id="' . self::$messageId . '">' . $message . '</p>
 					
-					<label for="' . self::$name . '">Username :</label>
-					<input type="text" id="' . self::$name . '" name="' . self::$name . '" value="' . self::$storedUsername . '" />
+					<label for="' . self::$usernameId . '">Username :</label>
+					<input type="text" id="' . self::$usernameId . '" name="' . self::$usernameId . '" value="' . self::$storedUsername . '" />
 
-					<label for="' . self::$password . '">Password :</label>
-					<input type="password" id="' . self::$password . '" name="' . self::$password . '" />
+					<label for="' . self::$passwordId . '">Password :</label>
+					<input type="password" id="' . self::$passwordId . '" name="' . self::$passwordId . '" />
 
-					<label for="' . self::$keep . '">Keep me logged in  :</label>
-					<input type="checkbox" id="' . self::$keep . '" name="' . self::$keep . '" />
+					<label for="' . self::$keepId . '">Keep me logged in  :</label>
+					<input type="checkbox" id="' . self::$keepId . '" name="' . self::$keepId . '" />
 					
-					<input type="submit" name="' . self::$login . '" value="login" />
+					<input type="submit" name="' . self::$loginId . '" value="login" />
 				</fieldset>
 			</form>
 		';
