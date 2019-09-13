@@ -1,0 +1,11 @@
+{
+    "name": "zeno/1dv610_lab2",
+    "type": "project",
+    "authors": [
+        {
+            "name": "ei222bn",
+            "email": "ei222bn@student.lnu.se"
+        }
+    ],
+    "require": {}
+}
