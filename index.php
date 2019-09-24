@@ -1,16 +1,17 @@
 <?php
 
-//INCLUDE THE FILES NEEDED...
-require_once('view/LoginView.php');
-require_once('view/DateTimeView.php');
-require_once('view/LayoutView.php');
-require_once('settings.php');
+require_once 'controller/Settings.php';
+require_once 'controller/LoginController.php';
 
-//CREATE OBJECTS OF THE VIEWS
-$loginView = new LoginView();
-$dateTimeView = new DateTimeView();
-$layoutView = new LayoutView();
+require_once 'model/UserStorage.php';
 
+require_once 'view/IndexPageView.php';
 
-$layoutView->render(false, $loginView, $dateTimeView);
+$storage = new \Model\UserStorage();
+$indexView = new \View\IndexPageView();
+$loginController = new \Controller\LoginController($indexView, $storage);
 
+session_start();
+
+$loginController->read();
+$indexView->draw($storage->loadUser());
