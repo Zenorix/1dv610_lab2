@@ -203,6 +203,10 @@ class LoginView {
 
     private function getLoginMessage(): string {
         if ('POST' == $_SERVER['REQUEST_METHOD']) {
+            if ($this->wasLogoutPressed()){
+                return $this->local::LOGOUT;
+            }
+
             if (!$this->user->hasUsername()) {
                 return $this->local::MISSING_USERNAME;
             }
