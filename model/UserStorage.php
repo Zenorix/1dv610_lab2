@@ -3,21 +3,17 @@
 namespace Model;
 
 class UserStorage {
-    private static $sessionId = 'UserStorage::User';
+    private static $userId = 'UserStorage::User';
 
     public function saveUser(User $user): void {
-        $_SESSION[self::$sessionId] = $user;
+        $_SESSION[self::$userId] = $user;
     }
 
     public function loadUser(): User {
-        if (isset($_SESSION[self::$sessionId])) {
-            return $_SESSION[self::$sessionId];
+        if (isset($_SESSION[self::$userId])) {
+            return $_SESSION[self::$userId];
         }
 
         return new User('', '');
-    }
-
-    public function test() {
-        $this->user->validateUser();
     }
 }

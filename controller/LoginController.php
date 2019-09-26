@@ -3,6 +3,8 @@
 namespace Controller;
 
 class LoginController {
+    private static $postsId = 'LoginController::Posts';
+
     private $view;
     private $viewBody;
     private $storage;
@@ -15,10 +17,20 @@ class LoginController {
 
     public function read(): void {
         // Only to check when POST from has been sent
-        if ('POST' == $_SERVER['REQUEST_METHOD']) {
-            $this->onLogin();
+        $this->onPost();
+        $this->onLogin();
+        $this->onLogout();
+    }
 
-            $this->onLogout();
+    private function onPost(): void {
+        if ('POST' == $_SERVER['REQUEST_METHOD']) {
+            if (!isset($_SESSION[self::$postsId])) {
+                $_SESSION[self::$postsId][] = $this->viewBody->getPostId();
+            } elseif (in_array($this->viewBody->getPostId(), $_SESSION[self::$postsId])) {
+                unset($_POST); // We "ignore" everything in post
+            } else {
+                $_SESSION[self::$postsId][] = $this->viewBody->getPostId();
+            }
         }
     }
 

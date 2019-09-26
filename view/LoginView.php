@@ -15,6 +15,7 @@ class LoginView {
     private static $cookiePassword = 'LoginView::CookiePassword';
     private static $keepId = 'LoginView::KeepMeLoggedIn';
     private static $messageId = 'LoginView::Message';
+    private static $postId = 'LoginView::Post';
 
     private $local;
     private $user;
@@ -96,6 +97,10 @@ class LoginView {
         return isset($_POST[self::$passwordId]);
     }
 
+    public function getPostId(): string {
+        return $this->getPostInput(self::$postId);
+    }
+
     /**
      * Generate HTML code for the title.
      *
@@ -138,7 +143,8 @@ class LoginView {
         return '
 			<form  method="post" >
 				<p id="'.self::$messageId.'">'.$this->getLogoutMessage().'</p>
-				<input type="submit" name="'.self::$logoutId.'" value="logout"/>
+                <input type="submit" name="'.self::$logoutId.'" value="logout"/>
+                <input type="hidden" name="'.self::$postId.'" value="'.uniqid().'"/>
 			</form>
 		';
     }
@@ -158,13 +164,14 @@ class LoginView {
 					<p id="'.self::$messageId.'">'.$this->getLoginMessage().'</p>
 					
 					<label for="'.self::$usernameId.'">Username :</label>
-					<input type="text" id="'.self::$usernameId.'" name="'.self::$usernameId.'" value="'.$this->getUsername().'" />
+					<input type="text" id="'.self::$usernameId.'" name="'.self::$usernameId.'" value="'.$this->user->getUsername().'" />
 
 					<label for="'.self::$passwordId.'">Password :</label>
 					<input type="password" id="'.self::$passwordId.'" name="'.self::$passwordId.'" />
 
 					<label for="'.self::$keepId.'">Keep me logged in  :</label>
-					<input type="checkbox" id="'.self::$keepId.'" name="'.self::$keepId.'" />
+                    <input type="checkbox" id="'.self::$keepId.'" name="'.self::$keepId.'" />
+                    <input type="hidden" name="'.self::$postId.'" value="'.uniqid().'"/>
 					
 					<input type="submit" name="'.self::$loginId.'" value="login" />
 				</fieldset>
@@ -203,7 +210,7 @@ class LoginView {
 
     private function getLoginMessage(): string {
         if ('POST' == $_SERVER['REQUEST_METHOD']) {
-            if ($this->wasLogoutPressed()){
+            if ($this->wasLogoutPressed()) {
                 return $this->local::LOGOUT;
             }
 
@@ -222,8 +229,12 @@ class LoginView {
     }
 
     private function getLogoutMessage(): string {
-        // TODO
+        if ('POST' == $_SERVER['REQUEST_METHOD']) {
+            if ($this->wasLoginPressed()) {
+                return $this->local::LOGIN;
+            }
+        }
 
-        return 'Welcome';
+        return '';
     }
 }
