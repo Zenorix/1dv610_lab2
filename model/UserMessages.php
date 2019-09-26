@@ -5,7 +5,7 @@ namespace Model;
 class UserMessages {
     const MISSING_USERNAME = 'Username is missing';
     const MISSING_PASSWORD = 'Password is missing';
-    const INVALD_LOGIN = 'Wrong username or password';
+    const INVALD_LOGIN = 'Wrong name or password';
     const LOGIN = 'Welcome';
     const LOGOUT = 'Bye bye!';
     // const EXAMPLE = "UsrMsg::";
