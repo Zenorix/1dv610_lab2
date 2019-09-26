@@ -18,7 +18,7 @@ class HeadView {
         <html lang="'.$this->getLanguage().'">
           <head>
             <meta charset="utf-8">
-            <title>$'.$this->getTitle().'</title>
+            <title>'.$this->getTitle().'</title>
           </head>';
     }
 
