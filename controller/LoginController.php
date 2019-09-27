@@ -3,7 +3,7 @@
 namespace Controller;
 
 class LoginController {
-    private static $postsId = 'LoginController::Posts';
+    private static $currentViewId = 'LoginController::currentView';
 
     private $view;
     private $viewBody;
@@ -23,13 +23,13 @@ class LoginController {
     }
 
     private function onPost(): void {
+        // If post has been sent to us, we are making sure it is not a duplicate (AKA Refresh using F5)
         if ('POST' == $_SERVER['REQUEST_METHOD']) {
-            if (!isset($_SESSION[self::$postsId])) {
-                $_SESSION[self::$postsId][] = $this->viewBody->getPostId();
-            } elseif (in_array($this->viewBody->getPostId(), $_SESSION[self::$postsId])) {
+            if ('' !== $this->getCurrentView()) {
+                if ($this->viewBody->getView() !== $this->getCurrentView()) {
                 unset($_POST); // We "ignore" everything in post
             } else {
-                $_SESSION[self::$postsId][] = $this->viewBody->getPostId();
+                $this->setCurrentView($this->viewBody->getView());
             }
         }
     }
@@ -37,8 +37,12 @@ class LoginController {
     private function onLogin(): void {
         //$user;
         if ($this->viewBody->wasLoginPressed()) {
-            $this->user = new \Model\User($this->viewBody->getUsername(), $this->viewBody->getPassword());
-            $this->storage->saveUser($this->user);
+            $user = new \Model\User($this->viewBody->getUsername(), $this->viewBody->getPassword());
+            $this->storage->saveUser($user);
+            if ($user->validateUser()) {
+        }
+                $this->setCurrentView('logout');
+    }
         }
     }
 
@@ -47,6 +51,18 @@ class LoginController {
             //TODO Logging out
             $this->user = new \Model\User('', '');
             $this->storage->saveUser($this->user);
+            $this->setCurrentView('login');
         }
+    }
+    private function getCurrentView(): string {
+        if (isset($_SESSION[self::$currentViewId])) {
+            return $_SESSION[self::$currentViewId];
+        }
+
+        return '';
+    }
+
+    private function setCurrentView(string $viewString) {
+        $_SESSION[self::$currentViewId] = $viewString;
     }
 }

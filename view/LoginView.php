@@ -73,6 +73,17 @@ class LoginView {
         return $this->getPostInput(self::$passwordId);
     }
 
+    public function getView(): string {
+        if ($this->wasLoginPressed()) {
+            return $this->getPostInput(self::$loginId);
+        }
+        if ($this->wasLogoutPressed()) {
+            return $this->etPostInput(self::$logoutId);
+        }
+
+        return '';
+    }
+
     public function wasLoginPressed(): bool {
         return isset($_POST[self::$loginId]);
     }
