@@ -16,7 +16,7 @@ class LoginController {
     }
 
     public function read(): void {
-        // Only to check when POST from has been sent
+        $this->onCookie();
         $this->onPost();
         $this->onLogin();
         $this->onLogout();
@@ -27,7 +27,8 @@ class LoginController {
         if ('POST' == $_SERVER['REQUEST_METHOD']) {
             if ('' !== $this->getCurrentView()) {
                 if ($this->viewBody->getView() !== $this->getCurrentView()) {
-                unset($_POST); // We "ignore" everything in post
+                    unset($_POST); // We "ignore" everything in post
+                }
             } else {
                 $this->setCurrentView($this->viewBody->getView());
             }
@@ -35,25 +36,38 @@ class LoginController {
     }
 
     private function onLogin(): void {
-        //$user;
         if ($this->viewBody->wasLoginPressed()) {
             $user = new \Model\User($this->viewBody->getUsername(), $this->viewBody->getPassword());
             $this->storage->saveUser($user);
             if ($user->validateUser()) {
-        }
+                if ($this->viewBody->getKeepLogin()) {
+                    $this->viewBody->setCookieUser($user);
+                }
                 $this->setCurrentView('logout');
-    }
+            }
         }
     }
 
     private function onLogout(): void {
         if ($this->viewBody->wasLogoutPressed()) {
             //TODO Logging out
-            $this->user = new \Model\User('', '');
+            $this->user = new \Model\User(\Model\User::EMPTY_USERNAME, \Model\User::EMPTY_PASSWORD);
             $this->storage->saveUser($this->user);
             $this->setCurrentView('login');
         }
     }
+
+    private function onCookie(): void {
+        if ($this->viewBody->hasCookie()) {
+            if ($this->viewBody->getCookieUser()->validateUser()) {
+                $this->storage->saveUser($this->viewBody->getCookieUser());
+                $this->setCurrentView('logout');
+            } else {
+                $this->viewBody->setCookieUser(new \Model\User(\Model\User::EMPTY_USERNAME, \Model\User::EMPTY_PASSWORD));
+            }
+        }
+    }
+
     private function getCurrentView(): string {
         if (isset($_SESSION[self::$currentViewId])) {
             return $_SESSION[self::$currentViewId];

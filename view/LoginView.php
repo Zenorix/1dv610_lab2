@@ -7,6 +7,7 @@ require_once 'model/UserMessages.php';
 require_once 'model/User.php';
 
 class LoginView {
+    private static $cookieExpiry = (60 * 60 * 24 * 30); // seconds * minutes * hours * days = 30 days
     private static $loginId = 'LoginView::Login';
     private static $logoutId = 'LoginView::Logout';
     private static $usernameId = 'LoginView::UserName';
@@ -21,7 +22,7 @@ class LoginView {
     private $user;
 
     public function __construct() {
-        $this->user = new \Model\User('', '');
+        $this->user = new \Model\User(\Model\User::EMPTY_USERNAME, \Model\User::EMPTY_PASSWORD);
         $this->local = new \Model\UserMessages('en');
     }
 
@@ -54,11 +55,11 @@ class LoginView {
         if (isset($_POST[self::$usernameId])) {
             return $this->getPostInput(self::$usernameId);
         }
-        if (isset($_SESSION[self::$usernameId]) && '' != $_SESSION[self::$usernameId]) {
+        if (isset($_SESSION[self::$usernameId]) && \Model\User::EMPTY_USERNAME != $_SESSION[self::$usernameId]) {
             return $_SESSION[self::$usernameId];
         }
 
-        return '';
+        return \Model\User::EMPTY_USERNAME;
     }
 
     public function saveUsername(): void {
@@ -93,7 +94,7 @@ class LoginView {
     }
 
     public function wasUsernameEntered(): bool {
-        if ('' == $_POST[self::$usernameId]) {
+        if (\Model\User::EMPTY_USERNAME == $_POST[self::$usernameId]) {
             return false;
         }
 
@@ -101,7 +102,7 @@ class LoginView {
     }
 
     public function wasPasswordEntered(): bool {
-        if ('' == $_POST[self::$passwordId]) {
+        if (\Model\User::EMPTY_PASSWORD == $_POST[self::$passwordId]) {
             return false;
         }
 
@@ -110,6 +111,23 @@ class LoginView {
 
     public function getPostId(): string {
         return $this->getPostInput(self::$postId);
+    }
+
+    public function getKeepLogin() {
+        return isset($_POST[self::$keepId]);
+    }
+
+    public function hasCookie(): bool {
+        return isset($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
+    }
+
+    public function getCookieUser(): \Model\User {
+        return new \Model\User($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
+    }
+
+    public function setCookieUser(\Model\User $user): void {
+        setcookie(self::$cookieName, $user->getUsername(), time() + self::$cookieExpiry, '/');
+        setcookie(self::$cookiePassword, $user->getHashPassword(), time() + self::$cookieExpiry, '/');
     }
 
     /**
@@ -234,18 +252,25 @@ class LoginView {
             if (!$this->user->validateUser()) {
                 return $this->local::INVALD_LOGIN;
             }
+            if ($this->hasCookie() && $this->user->validateUser()) {
+                return $this->local::COOKIE_LOGIN;
+            }
         }
 
-        return '';
+        return $this->local::EMPTY_MESSAGE;
     }
 
     private function getLogoutMessage(): string {
         if ('POST' == $_SERVER['REQUEST_METHOD']) {
             if ($this->wasLoginPressed()) {
+                if ($this->getKeepLogin()) {
+                    return $this->local::COOKIE_LOGIN;
+                }
+
                 return $this->local::LOGIN;
             }
         }
 
-        return '';
+        return $this->local::EMPTY_MESSAGE;
     }
 }

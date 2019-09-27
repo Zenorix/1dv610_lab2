@@ -14,6 +14,6 @@ class UserStorage {
             return $_SESSION[self::$userId];
         }
 
-        return new User('', '');
+        return new User(\Model\User::EMPTY_USERNAME, \Model\User::EMPTY_PASSWORD);
     }
 }
