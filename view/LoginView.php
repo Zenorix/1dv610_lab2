@@ -243,17 +243,19 @@ class LoginView {
                 return $this->local::LOGOUT;
             }
 
-            if (!$this->user->hasUsername()) {
-                return $this->local::MISSING_USERNAME;
-            }
-            if (!$this->user->hasPassword()) {
-                return $this->local::MISSING_PASSWORD;
-            }
-            if (!$this->user->validateUser()) {
-                return $this->local::INVALD_LOGIN;
-            }
-            if ($this->hasCookie() && $this->user->validateUser()) {
-                return $this->local::COOKIE_LOGIN;
+            if ($this->wasLoginPressed()) {
+                if (!$this->user->hasUsername()) {
+                    return $this->local::MISSING_USERNAME;
+                }
+                if (!$this->user->hasPassword()) {
+                    return $this->local::MISSING_PASSWORD;
+                }
+                if (!$this->user->validateUser()) {
+                    return $this->local::INVALD_LOGIN;
+                }
+                if ($this->hasCookie() && $this->user->validateUser()) {
+                    return $this->local::COOKIE_LOGIN;
+                }
             }
         }
 
