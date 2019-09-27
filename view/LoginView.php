@@ -79,7 +79,7 @@ class LoginView {
             return $this->getPostInput(self::$loginId);
         }
         if ($this->wasLogoutPressed()) {
-            return $this->etPostInput(self::$logoutId);
+            return $this->getPostInput(self::$logoutId);
         }
 
         return '';
