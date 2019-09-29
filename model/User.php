@@ -8,6 +8,8 @@ class User {
 
     private $username;
     private $hashPassword;
+    private $sessionID;
+    private $userAgent;
 
     public function __construct($username, $hashPassword) {
         $this->username = $username;
@@ -16,6 +18,13 @@ class User {
         } else {
             $this->hashPassword = $hashPassword;
         }
+        if (isset($_COOKIE['PHPSESSID'])) {
+            $this->sessionID = $_COOKIE['PHPSESSID'];
+        }
+        else {
+            $this->sessionID = '';
+        }
+        $this->userAgent = $_SERVER['HTTP_USER_AGENT'];
     }
 
     public function validateUser(): bool {
@@ -24,6 +33,10 @@ class User {
         $isValidPassword = password_verify('Password', $this->hashPassword);
 
         return $isValidUsername && $isValidPassword;
+    }
+
+    public function validateSession(): bool{
+        return $this->sessionID === $_COOKIE['PHPSESSID'] && $this->userAgent === $_SERVER['HTTP_USER_AGENT'];
     }
 
     public function hasPassword(): bool {

@@ -22,6 +22,21 @@ class LoginController {
         $this->onLogout();
     }
 
+    private function onCookie(): void {
+        if ($this->viewBody->hasCookie()) {
+            if ($this->viewBody->getCookieUser()->validateUser()) {
+                if ($this->storage->loadUser()->hasUsername()) {
+                    // Nothing for now
+                } else {
+                    $this->storage->saveUser($this->viewBody->getCookieUser());
+                    $this->setCurrentView('logout');
+                }
+            } else {
+                $this->viewBody->removeCookieUser();
+            }
+        }
+    }
+
     private function onPost(): void {
         // If post has been sent to us, we are making sure it is not a duplicate (AKA Refresh using F5)
         if ('POST' == $_SERVER['REQUEST_METHOD']) {
@@ -55,22 +70,6 @@ class LoginController {
             $this->storage->saveUser($this->user);
             $this->setCurrentView('login');
             if ($this->viewBody->hasCookie()) {
-                $this->viewBody->removeCookieUser();
-            }
-        }
-    }
-
-    private function onCookie(): void {
-        if ($this->viewBody->hasCookie()) {
-            if ($this->viewBody->getCookieUser()->validateUser()) {
-                if ($this->storage->loadUser()->hasUsername()) {
-                    //Session already exists
-                    //TODO Need to tell view not a cookie login
-                } else {
-                    $this->storage->saveUser($this->viewBody->getCookieUser());
-                    $this->setCurrentView('logout');
-                }
-            } else {
                 $this->viewBody->removeCookieUser();
             }
         }

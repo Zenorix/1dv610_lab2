@@ -7,11 +7,11 @@ require_once 'model/UserStorage.php';
 
 require_once 'view/IndexPageView.php';
 
+session_start();
+
 $storage = new \Model\UserStorage();
 $indexView = new \View\IndexPageView();
 $loginController = new \Controller\LoginController($indexView, $storage);
-
-session_start();
 
 $loginController->read();
 $indexView->draw($storage->loadUser());

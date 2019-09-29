@@ -2,6 +2,8 @@
 
 namespace View;
 
+use Exception;
+
 require_once 'view/DateTimeView.php';
 require_once 'model/UserMessages.php';
 require_once 'model/User.php';
@@ -16,7 +18,6 @@ class LoginView {
     private static $cookiePassword = 'LoginView::CookiePassword';
     private static $keepId = 'LoginView::KeepMeLoggedIn';
     private static $messageId = 'LoginView::Message';
-    private static $postId = 'LoginView::Post';
 
     private $local;
     private $user;
@@ -47,101 +48,15 @@ class LoginView {
         ';
     }
 
-    public function setUser(\Model\User $user) {
-        $this->user = $user;
-    }
-
-    public function getUsername(): string {
-        if (isset($_POST[self::$usernameId])) {
-            return $this->getPostInput(self::$usernameId);
-        }
-        if (isset($_SESSION[self::$usernameId]) && \Model\User::EMPTY_USERNAME != $_SESSION[self::$usernameId]) {
-            return $_SESSION[self::$usernameId];
-        }
-
-        return \Model\User::EMPTY_USERNAME;
-    }
-
-    public function saveUsername(): void {
-        $_SESSION[self::$usernameId] = $this->getPostInput(self::$usernameId);
-    }
-
-    public function setMessage($text): void {
-        $this->message = $text;
-    }
-
-    public function getPassword(): string {
-        return $this->getPostInput(self::$passwordId);
-    }
-
-    public function getView(): string {
-        if ($this->wasLoginPressed()) {
-            return $this->getPostInput(self::$loginId);
-        }
-        if ($this->wasLogoutPressed()) {
-            return $this->getPostInput(self::$logoutId);
-        }
-
-        return '';
-    }
-
-    public function wasLoginPressed(): bool {
-        return isset($_POST[self::$loginId]);
-    }
-
-    public function wasLogoutPressed(): bool {
-        return isset($_POST[self::$logoutId]);
-    }
-
-    public function wasUsernameEntered(): bool {
-        if (\Model\User::EMPTY_USERNAME == $_POST[self::$usernameId]) {
-            return false;
-        }
-
-        return isset($_POST[self::$usernameId]);
-    }
-
-    public function wasPasswordEntered(): bool {
-        if (\Model\User::EMPTY_PASSWORD == $_POST[self::$passwordId]) {
-            return false;
-        }
-
-        return isset($_POST[self::$passwordId]);
-    }
-
-    public function isKeepLogin(): bool {
-        return isset($_POST[self::$keepId]);
-    }
-
-    public function hasCookie(): bool {
-        return isset($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
-    }
-
-    public function getCookieUser(): \Model\User {
-        return new \Model\User($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
-    }
-
-    public function setCookieUser(\Model\User $user): void {
-        setcookie(self::$cookieName, $user->getUsername(), time() + self::$cookieExpiry);
-        setcookie(self::$cookiePassword, $user->getHashPassword(), time() + self::$cookieExpiry);
-    }
-
-    public function removeCookieUser(): void {
-        // unset($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
-
-        setcookie(self::$cookieName, '', time() - self::$cookieExpiry);
-        setcookie(self::$cookiePassword, '', time() - self::$cookieExpiry);
-    }
-
     /**
      * Generate HTML code for the title.
      *
      * @param mixed $isLoggedIn
      *
-     * @return string, BUT writes to standard output!
+     * @return string,
      */
     private function generateTitleHTML(): string {
-        if ($this->user->validateUser()) {
+        if ($this->user->validateUser() && $this->user->validateSession()) {
             return '<h2>Logged in</h2>';
         }
 
@@ -151,11 +66,11 @@ class LoginView {
     /**
      * Generate HTML code for the body.
      *
-     * @return void, BUT writes to standard output!
+     * @return string,
      */
     private function generateBodyHTML(): string {
         $response = '';
-        if ($this->user->validateUser()) {
+        if ($this->user->validateUser() && $this->user->validateSession()) {
             $response .= $this->generateLogoutHTML();
         } else {
             $response .= $this->generateLoginHTML();
@@ -167,9 +82,7 @@ class LoginView {
     /**
      * Generate HTML code for the logout.
      *
-     * @param $message, String output message
-     *
-     * @return void, BUT writes to standard output!
+     * @return string
      */
     private function generateLogoutHTML(): string {
         return '
@@ -181,11 +94,9 @@ class LoginView {
     }
 
     /**
-     * Generate HTML code for the login.
+     * Generate HTML code for the login
      *
-     * @param $message, String output message
-     *
-     * @return void, BUT writes to standard output!
+     * @return string ,
      */
     private function generateLoginHTML(): string {
         return '
@@ -220,24 +131,6 @@ class LoginView {
         return $timeView->generateHTML();
     }
 
-    /**
-     * Returns string value of paramtered form in a safe way.
-     *
-     * @param string, String Id of the form element which we want value from
-     * @param mixed $postData
-     *
-     * @return string, controlled input of POST
-     */
-    private function getPostInput($postData): string {
-        // To remove unnecessary characters and blackslashes, as well prevent code injection
-        // Source: https://www.w3schools.com/php/php_form_validation.asp
-        if (isset($_POST[$postData])) {
-            return htmlspecialchars(stripslashes(trim($_POST[$postData])));
-        }
-
-        return '';
-    }
-
     private function getLoginMessage(): string {
         if ('POST' == $_SERVER['REQUEST_METHOD']) {
             if ($this->wasLogoutPressed()) {
@@ -258,10 +151,13 @@ class LoginView {
                     return $this->local::COOKIE_LOGIN;
                 }
             }
-        }elseif ($this->hasCookie()) {
+        } elseif ($this->hasCookie()) {
             if (!$this->getCookieUser()->validateUser()) {
                 return $this->local::BAD_COOKIE;
             }
+
+            throw new Exception('Should not be here, valid cookie at login');
+
             return 'Nope';
         }
 
@@ -278,16 +174,134 @@ class LoginView {
                 return $this->local::LOGIN;
             }
         } elseif ($this->hasCookie()) {
-            if ($this->hasSession()){
+            if ($this->hasSession()) {
                 return $this->local::EMPTY_MESSAGE;
             }
+
             return $this->local::COOKIE_LOGIN;
         }
 
         return $this->local::EMPTY_MESSAGE;
     }
 
-    private function hasSession(): bool{
+    private function hasSession(): bool {
         return isset($_COOKIE['PHPSESSID']);
     }
+
+    /**
+     * User related functions
+     */
+
+    public function setUser(\Model\User $user) {
+        $this->user = $user;
+    }
+
+    public function getUsername(): string {
+        if (isset($_POST[self::$usernameId])) {
+            return $this->getPostInput(self::$usernameId);
+        }
+        if (isset($_SESSION[self::$usernameId]) && \Model\User::EMPTY_USERNAME != $_SESSION[self::$usernameId]) {
+            return $_SESSION[self::$usernameId];
+        }
+
+        return \Model\User::EMPTY_USERNAME;
+    }
+
+    public function saveUsername(): void {
+        $_SESSION[self::$usernameId] = $this->getPostInput(self::$usernameId);
+    }
+
+
+    public function getPassword(): string {
+        return $this->getPostInput(self::$passwordId);
+    }
+
+    public function wasLoginPressed(): bool {
+        return isset($_POST[self::$loginId]);
+    }
+
+    public function wasLogoutPressed(): bool {
+        return isset($_POST[self::$logoutId]);
+    }
+
+    public function wasUsernameEntered(): bool {
+        if (\Model\User::EMPTY_USERNAME == $_POST[self::$usernameId]) {
+            return false;
+        }
+
+        return isset($_POST[self::$usernameId]);
+    }
+
+    public function wasPasswordEntered(): bool {
+        if (\Model\User::EMPTY_PASSWORD == $_POST[self::$passwordId]) {
+            return false;
+        }
+
+        return isset($_POST[self::$passwordId]);
+    }
+
+    /**
+     * View related functions
+     */
+
+    public function getView(): string {
+        if ($this->wasLoginPressed()) {
+            return $this->getPostInput(self::$loginId);
+        }
+        if ($this->wasLogoutPressed()) {
+            return $this->getPostInput(self::$logoutId);
+        }
+
+        return '';
+    }
+
+    public function isKeepLogin(): bool {
+        return isset($_POST[self::$keepId]);
+    }
+
+    /**
+     * Cookies related functions
+     */
+
+    public function hasCookie(): bool {
+        return isset($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
+    }
+
+    public function getCookieUser(): \Model\User {
+        return new \Model\User($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
+    }
+
+    public function setCookieUser(\Model\User $user): void {
+        setcookie(self::$cookieName, $user->getUsername(), time() + self::$cookieExpiry);
+        setcookie(self::$cookiePassword, $user->getHashPassword(), time() + self::$cookieExpiry);
+    }
+
+    public function removeCookieUser(): void {
+        // unset($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
+
+        setcookie(self::$cookieName, '', time() - self::$cookieExpiry);
+        setcookie(self::$cookiePassword, '', time() - self::$cookieExpiry);
+    }
+
+    
+
+    /**
+     * Returns string value of paramtered form in a safe way.
+     *
+     * @param string, String Id of the form element which we want value from
+     * @param mixed $postData
+     *
+     * @return string, controlled input of POST
+     */
+    private function getPostInput($postData): string {
+        // To remove unnecessary characters and blackslashes, as well prevent code injection
+        // Source: https://www.w3schools.com/php/php_form_validation.asp
+        if (isset($_POST[$postData])) {
+            return htmlspecialchars(stripslashes(trim($_POST[$postData])));
+        }
+
+        return '';
+    }
+
+
 }
