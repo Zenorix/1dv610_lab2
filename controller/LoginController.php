@@ -37,10 +37,10 @@ class LoginController {
 
     private function onLogin(): void {
         if ($this->viewBody->wasLoginPressed()) {
-            $user = new \Model\User($this->viewBody->getUsername(), $this->viewBody->getPassword());
+            $user = new \Model\User($this->viewBody->getUsername(), password_hash($this->viewBody->getPassword(), PASSWORD_DEFAULT));
             $this->storage->saveUser($user);
             if ($user->validateUser()) {
-                if ($this->viewBody->getKeepLogin()) {
+                if ($this->viewBody->isKeepLogin()) {
                     $this->viewBody->setCookieUser($user);
                 }
                 $this->setCurrentView('logout');
@@ -51,19 +51,27 @@ class LoginController {
     private function onLogout(): void {
         if ($this->viewBody->wasLogoutPressed()) {
             //TODO Logging out
-            $this->user = new \Model\User(\Model\User::EMPTY_USERNAME, \Model\User::EMPTY_PASSWORD);
+            $this->user = new \Model\User(\Model\User::EMPTY_USERNAME, password_hash(\Model\User::EMPTY_PASSWORD, PASSWORD_DEFAULT));
             $this->storage->saveUser($this->user);
             $this->setCurrentView('login');
+            if ($this->viewBody->hasCookie()) {
+                $this->viewBody->removeCookieUser();
+            }
         }
     }
 
     private function onCookie(): void {
         if ($this->viewBody->hasCookie()) {
             if ($this->viewBody->getCookieUser()->validateUser()) {
-                $this->storage->saveUser($this->viewBody->getCookieUser());
-                $this->setCurrentView('logout');
+                if ($this->storage->loadUser()->hasUsername()) {
+                    //Session already exists
+                    //TODO Need to tell view not a cookie login
+                } else {
+                    $this->storage->saveUser($this->viewBody->getCookieUser());
+                    $this->setCurrentView('logout');
+                }
             } else {
-                $this->viewBody->setCookieUser(new \Model\User(\Model\User::EMPTY_USERNAME, \Model\User::EMPTY_PASSWORD));
+                $this->viewBody->removeCookieUser();
             }
         }
     }

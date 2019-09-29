@@ -22,7 +22,7 @@ class LoginView {
     private $user;
 
     public function __construct() {
-        $this->user = new \Model\User(\Model\User::EMPTY_USERNAME, \Model\User::EMPTY_PASSWORD);
+        $this->user = new \Model\User(\Model\User::EMPTY_USERNAME, password_hash(\Model\User::EMPTY_PASSWORD, PASSWORD_DEFAULT));
         $this->local = new \Model\UserMessages('en');
     }
 
@@ -109,11 +109,7 @@ class LoginView {
         return isset($_POST[self::$passwordId]);
     }
 
-    public function getPostId(): string {
-        return $this->getPostInput(self::$postId);
-    }
-
-    public function getKeepLogin() {
+    public function isKeepLogin(): bool {
         return isset($_POST[self::$keepId]);
     }
 
@@ -126,8 +122,15 @@ class LoginView {
     }
 
     public function setCookieUser(\Model\User $user): void {
-        setcookie(self::$cookieName, $user->getUsername(), time() + self::$cookieExpiry, '/');
-        setcookie(self::$cookiePassword, $user->getHashPassword(), time() + self::$cookieExpiry, '/');
+        setcookie(self::$cookieName, $user->getUsername(), time() + self::$cookieExpiry);
+        setcookie(self::$cookiePassword, $user->getHashPassword(), time() + self::$cookieExpiry);
+    }
+
+    public function removeCookieUser(): void {
+        // unset($_COOKIE[self::$cookieName], $_COOKIE[self::$cookiePassword]);
+
+        setcookie(self::$cookieName, '', time() - self::$cookieExpiry);
+        setcookie(self::$cookiePassword, '', time() - self::$cookieExpiry);
     }
 
     /**
@@ -173,7 +176,6 @@ class LoginView {
 			<form  method="post" >
 				<p id="'.self::$messageId.'">'.$this->getLogoutMessage().'</p>
                 <input type="submit" name="'.self::$logoutId.'" value="logout"/>
-                <input type="hidden" name="'.self::$postId.'" value="'.uniqid().'"/>
 			</form>
 		';
     }
@@ -200,7 +202,6 @@ class LoginView {
 
 					<label for="'.self::$keepId.'">Keep me logged in  :</label>
                     <input type="checkbox" id="'.self::$keepId.'" name="'.self::$keepId.'" />
-                    <input type="hidden" name="'.self::$postId.'" value="'.uniqid().'"/>
 					
 					<input type="submit" name="'.self::$loginId.'" value="login" />
 				</fieldset>
@@ -265,14 +266,23 @@ class LoginView {
     private function getLogoutMessage(): string {
         if ('POST' == $_SERVER['REQUEST_METHOD']) {
             if ($this->wasLoginPressed()) {
-                if ($this->getKeepLogin()) {
-                    return $this->local::COOKIE_LOGIN;
+                if ($this->isKeepLogin()) {
+                    return $this->local::REMEMBER_LOGIN;
                 }
 
                 return $this->local::LOGIN;
             }
+        } elseif ($this->hasCookie()) {
+            if ($this->hasSession()){
+                return $this->local::EMPTY_MESSAGE;
+            }
+            return $this->local::COOKIE_LOGIN;
         }
 
         return $this->local::EMPTY_MESSAGE;
+    }
+
+    private function hasSession(): bool{
+        return isset($_COOKIE['PHPSESSID']);
     }
 }

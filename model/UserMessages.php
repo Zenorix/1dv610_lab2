@@ -9,10 +9,11 @@ class UserMessages {
     const INVALD_LOGIN = 'Wrong name or password';
     const LOGIN = 'Welcome';
     const LOGOUT = 'Bye bye!';
-    const COOKIE_LOGIN = 'Welcome and you will be remembered';
-    const COOKIE = 'Welcome back with cookie';
+    const REMEMBER_LOGIN = 'Welcome and you will be remembered';
+    const COOKIE_LOGIN = 'Welcome back with cookie';
     const COOKIE_LOGOUT = '';
-    // const EXAMPLE = "UsrMsg::";
+    const BAD_COOKIE = 'Wrong information in cookies';
+    // const EXAMPLE = "UsrMsg";
 
     private $language;
 

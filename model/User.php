@@ -9,17 +9,16 @@ class User {
     private $username;
     private $hashPassword;
 
-    public function __construct($username, $password) {
+    public function __construct($username, $hashPassword) {
         $this->username = $username;
-        if (self::EMPTY_PASSWORD != $password) {
-            $this->hashPassword = password_hash($password, PASSWORD_DEFAULT);
-        } else {
-            $this->hashPassword = self::EMPTY_PASSWORD;
-        }
+        $this->hashPassword = $hashPassword;
     }
 
     public function validateUser(): bool {
-        return 'Admin' == $this->username && password_verify('Password', $this->hashPassword);
+        $isValidUsername = 'Admin' == $this->username;
+        $isValidPassword = password_verify('Password', $this->hashPassword);
+
+        return $isValidUsername && $isValidPassword;
     }
 
     public function hasPassword(): bool {
