@@ -11,10 +11,15 @@ class User {
 
     public function __construct($username, $hashPassword) {
         $this->username = $username;
-        $this->hashPassword = $hashPassword;
+        if (password_verify(self::EMPTY_PASSWORD, $hashPassword)) {
+            $this->hashPassword = self::EMPTY_PASSWORD;
+        } else {
+            $this->hashPassword = $hashPassword;
+        }
     }
 
     public function validateUser(): bool {
+        //TODO Implement user validation, just example for below
         $isValidUsername = 'Admin' == $this->username;
         $isValidPassword = password_verify('Password', $this->hashPassword);
 
@@ -22,11 +27,11 @@ class User {
     }
 
     public function hasPassword(): bool {
-        return self::EMPTY_PASSWORD != $this->hashPassword;
+        return self::EMPTY_PASSWORD !== $this->hashPassword;
     }
 
     public function hasUsername(): bool {
-        return self::EMPTY_USERNAME != $this->username;
+        return self::EMPTY_USERNAME !== $this->username;
     }
 
     public function getUsername(): string {
