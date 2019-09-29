@@ -56,7 +56,7 @@ class LoginView {
      * @return string,
      */
     private function generateTitleHTML(): string {
-        if ($this->user->validateUser() && $this->user->validateSession()) {
+        if ($this->user->validateUser()) {
             return '<h2>Logged in</h2>';
         }
 
@@ -70,7 +70,7 @@ class LoginView {
      */
     private function generateBodyHTML(): string {
         $response = '';
-        if ($this->user->validateUser() && $this->user->validateSession()) {
+        if ($this->user->validateUser()) {
             $response .= $this->generateLogoutHTML();
         } else {
             $response .= $this->generateLoginHTML();

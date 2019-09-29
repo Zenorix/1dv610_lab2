@@ -16,6 +16,7 @@ class LoginController {
     }
 
     public function read(): void {
+        // TODO: validate session against hijacking
         $this->onCookie();
         $this->onPost();
         $this->onLogin();
