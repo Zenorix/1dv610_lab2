@@ -258,6 +258,11 @@ class LoginView {
                     return $this->local::COOKIE_LOGIN;
                 }
             }
+        }elseif ($this->hasCookie()) {
+            if (!$this->getCookieUser()->validateUser()) {
+                return $this->local::BAD_COOKIE;
+            }
+            return 'Nope';
         }
 
         return $this->local::EMPTY_MESSAGE;
